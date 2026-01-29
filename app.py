@@ -12,8 +12,8 @@ st.set_page_config(
 # =====================
 # SESSION STATE
 # =====================
-if "login" not in st.session_state:
-    st.session_state.login = False
+if "is_login" not in st.session_state:
+    st.session_state.is_login = False
 
 if "products" not in st.session_state:
     st.session_state.products = []
@@ -31,7 +31,7 @@ def halaman_login():
     st.title("YouthBizz 🐝")
     st.subheader("Aplikasi Promosi Wirausaha Siswa")
 
-    with st.form("login"):
+    with st.form("login_form"):  # ⬅️ FIX DI SINI
         username = st.text_input("Username")
         email = st.text_input("Email")
         phone = st.text_input("No. Telepon")
@@ -39,7 +39,7 @@ def halaman_login():
 
         if submit:
             if username and email and phone:
-                st.session_state.login = True
+                st.session_state.is_login = True
                 st.session_state.username = username
                 st.rerun()
             else:
@@ -79,13 +79,13 @@ def upload_produk():
             st.error("Lengkapi semua data dengan benar")
 
 # =====================
-# HOME / FEED
+# HOME
 # =====================
 def halaman_home():
     st.title("Beranda 🏠")
 
     if not st.session_state.products:
-        st.info("Belum ada produk yang diposting")
+        st.info("Belum ada produk")
         return
 
     for i, p in enumerate(st.session_state.products):
@@ -104,12 +104,12 @@ def halaman_home():
             col1, col2 = st.columns(2)
 
             with col1:
-                if st.button("❤️ Suka", key=f"like{i}"):
+                if st.button("❤️ Suka", key=f"like_{i}"):
                     if p not in st.session_state.liked:
                         st.session_state.liked.append(p)
 
             with col2:
-                if st.button("🔖 Simpan", key=f"save{i}"):
+                if st.button("🔖 Simpan", key=f"save_{i}"):
                     if p not in st.session_state.saved:
                         st.session_state.saved.append(p)
 
@@ -137,7 +137,7 @@ def halaman_profil():
         st.write("Belum ada")
 
     if st.button("Logout"):
-        st.session_state.login = False
+        st.session_state.is_login = False
         st.session_state.products = []
         st.session_state.liked = []
         st.session_state.saved = []
@@ -162,7 +162,7 @@ def navigasi():
 # =====================
 # MAIN
 # =====================
-if st.session_state.login:
+if st.session_state.is_login:
     navigasi()
 else:
     halaman_login()
