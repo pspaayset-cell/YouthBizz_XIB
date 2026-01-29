@@ -1,7 +1,7 @@
 import streamlit as st
 
 # =====================
-# KONFIGURASI APLIKASI
+# KONFIGURASI
 # =====================
 st.set_page_config(
     page_title="YouthBizz",
@@ -10,100 +10,137 @@ st.set_page_config(
 )
 
 # =====================
-# DATA CONTOH (DUMMY)
-# =====================
-products = [
-    {
-        "nama": "Es Coklat Premium",
-        "penjual": "YouthBizz_Store",
-        "harga": "Rp5.000",
-        "deskripsi": "Es coklat dengan rasa premium, cocok diminum saat cuaca panas.",
-        "kontak": "https://wa.me/6281234567890"
-    },
-    {
-        "nama": "Dimsum Ayam",
-        "penjual": "DimsumKu",
-        "harga": "Rp10.000",
-        "deskripsi": "Dimsum ayam homemade, halal dan bergizi.",
-        "kontak": "https://wa.me/6289876543210"
-    },
-    {
-        "nama": "Seblak Pedas",
-        "penjual": "SeblakNampol",
-        "harga": "Rp12.000",
-        "deskripsi": "Seblak dengan level pedas yang bisa disesuaikan.",
-        "kontak": "https://wa.me/6281112223333"
-    }
-]
-
-# =====================
 # SESSION STATE
 # =====================
 if "login" not in st.session_state:
     st.session_state.login = False
 
+if "products" not in st.session_state:
+    st.session_state.products = []
+
+if "liked" not in st.session_state:
+    st.session_state.liked = []
+
+if "saved" not in st.session_state:
+    st.session_state.saved = []
+
 # =====================
-# HALAMAN LOGIN
+# LOGIN
 # =====================
 def halaman_login():
     st.title("YouthBizz 🐝")
     st.subheader("Aplikasi Promosi Wirausaha Siswa")
 
-    with st.form("login_form"):
+    with st.form("login"):
         username = st.text_input("Username")
         email = st.text_input("Email")
-        no_hp = st.text_input("No. Telepon")
-
+        phone = st.text_input("No. Telepon")
         submit = st.form_submit_button("Masuk")
 
         if submit:
-            if username and email and no_hp:
+            if username and email and phone:
                 st.session_state.login = True
                 st.session_state.username = username
-                st.success("Login berhasil!")
                 st.rerun()
             else:
-                st.error("Semua field wajib diisi!")
+                st.error("Semua data wajib diisi")
 
 # =====================
-# HALAMAN HOME
+# UPLOAD PRODUK
+# =====================
+def upload_produk():
+    st.title("Upload Produk 📤")
+
+    nama = st.text_input("Nama Produk")
+    harga = st.text_input("Harga Produk")
+    deskripsi = st.text_area("Deskripsi Produk")
+
+    files = st.file_uploader(
+        "Upload Foto/Video Produk (maks. 5)",
+        type=["jpg", "png", "mp4"],
+        accept_multiple_files=True
+    )
+
+    if files and len(files) > 5:
+        st.warning("Maksimal 5 file saja")
+
+    if st.button("Posting Produk"):
+        if nama and harga and deskripsi and files and len(files) <= 5:
+            st.session_state.products.append({
+                "nama": nama,
+                "harga": harga,
+                "deskripsi": deskripsi,
+                "files": files,
+                "penjual": st.session_state.username
+            })
+            st.success("Produk berhasil diposting")
+            st.rerun()
+        else:
+            st.error("Lengkapi semua data dengan benar")
+
+# =====================
+# HOME / FEED
 # =====================
 def halaman_home():
     st.title("Beranda 🏠")
-    st.write(f"Selamat datang, **{st.session_state.username}** 👋")
 
-    st.divider()
+    if not st.session_state.products:
+        st.info("Belum ada produk yang diposting")
+        return
 
-    for p in products:
+    for i, p in enumerate(st.session_state.products):
         with st.container():
             st.subheader(p["nama"])
             st.caption(f"Penjual: {p['penjual']}")
             st.write(p["deskripsi"])
-            st.write(f"💰 **Harga:** {p['harga']}")
+            st.write(f"💰 Harga: {p['harga']}")
 
-            col1, col2, col3 = st.columns(3)
+            for f in p["files"]:
+                if f.type.startswith("image"):
+                    st.image(f)
+                elif f.type.startswith("video"):
+                    st.video(f)
+
+            col1, col2 = st.columns(2)
+
             with col1:
-                st.button("❤️ Suka", key=p["nama"] + "like")
+                if st.button("❤️ Suka", key=f"like{i}"):
+                    if p not in st.session_state.liked:
+                        st.session_state.liked.append(p)
+
             with col2:
-                st.button("🔖 Simpan", key=p["nama"] + "save")
-            with col3:
-                st.link_button("📞 Hubungi", p["kontak"])
+                if st.button("🔖 Simpan", key=f"save{i}"):
+                    if p not in st.session_state.saved:
+                        st.session_state.saved.append(p)
 
             st.divider()
 
 # =====================
-# HALAMAN PROFIL
+# PROFIL
 # =====================
 def halaman_profil():
     st.title("Profil 👤")
-    st.write("Informasi Pengguna")
+    st.write(f"Username: **{st.session_state.username}**")
 
-    st.write(f"**Username:** {st.session_state.username}")
-    st.write("**Peran:** Siswa Wirausaha")
-    st.write("**Status:** Aktif")
+    st.subheader("❤️ Produk Disukai")
+    if st.session_state.liked:
+        for p in st.session_state.liked:
+            st.write(f"- {p['nama']}")
+    else:
+        st.write("Belum ada")
+
+    st.subheader("🔖 Produk Disimpan")
+    if st.session_state.saved:
+        for p in st.session_state.saved:
+            st.write(f"- {p['nama']}")
+    else:
+        st.write("Belum ada")
 
     if st.button("Logout"):
         st.session_state.login = False
+        st.session_state.products = []
+        st.session_state.liked = []
+        st.session_state.saved = []
         st.rerun()
 
 # =====================
@@ -112,16 +149,18 @@ def halaman_profil():
 def navigasi():
     menu = st.sidebar.radio(
         "Menu",
-        ["Home", "Profil"]
+        ["Beranda", "Upload Produk", "Profil"]
     )
 
-    if menu == "Home":
+    if menu == "Beranda":
         halaman_home()
+    elif menu == "Upload Produk":
+        upload_produk()
     elif menu == "Profil":
         halaman_profil()
 
 # =====================
-# MAIN PROGRAM
+# MAIN
 # =====================
 if st.session_state.login:
     navigasi()
