@@ -31,7 +31,7 @@ def halaman_login():
     st.title("YouthBizz 🐝")
     st.subheader("Aplikasi Promosi Wirausaha Siswa")
 
-    with st.form("login_form"):  # ⬅️ FIX DI SINI
+    with st.form("login_form"):
         username = st.text_input("Username")
         email = st.text_input("Email")
         phone = st.text_input("No. Telepon")
@@ -41,6 +41,7 @@ def halaman_login():
             if username and email and phone:
                 st.session_state.is_login = True
                 st.session_state.username = username
+                st.success("Login berhasil 🎉")
                 st.rerun()
             else:
                 st.error("Semua data wajib diisi")
@@ -56,13 +57,13 @@ def upload_produk():
     deskripsi = st.text_area("Deskripsi Produk")
 
     files = st.file_uploader(
-        "Upload Foto/Video Produk (maks. 5)",
+        "Upload Foto / Video Produk (maks. 5)",
         type=["jpg", "png", "mp4"],
         accept_multiple_files=True
     )
 
     if files and len(files) > 5:
-        st.warning("Maksimal 5 file saja")
+        st.warning("Maksimal 5 file")
 
     if st.button("Posting Produk"):
         if nama and harga and deskripsi and files and len(files) <= 5:
@@ -73,19 +74,19 @@ def upload_produk():
                 "files": files,
                 "penjual": st.session_state.username
             })
-            st.success("Produk berhasil diposting")
+            st.success("✅ Produk berhasil di-upload")
             st.rerun()
         else:
             st.error("Lengkapi semua data dengan benar")
 
 # =====================
-# HOME
+# HOME / FEED
 # =====================
 def halaman_home():
     st.title("Beranda 🏠")
 
     if not st.session_state.products:
-        st.info("Belum ada produk")
+        st.info("Belum ada produk yang diposting")
         return
 
     for i, p in enumerate(st.session_state.products):
@@ -107,11 +108,13 @@ def halaman_home():
                 if st.button("❤️ Suka", key=f"like_{i}"):
                     if p not in st.session_state.liked:
                         st.session_state.liked.append(p)
+                        st.success("❤️ Produk ditambahkan ke Disukai")
 
             with col2:
                 if st.button("🔖 Simpan", key=f"save_{i}"):
                     if p not in st.session_state.saved:
                         st.session_state.saved.append(p)
+                        st.success("🔖 Produk berhasil disimpan")
 
             st.divider()
 
@@ -122,6 +125,20 @@ def halaman_profil():
     st.title("Profil 👤")
     st.write(f"Username: **{st.session_state.username}**")
 
+    # Produk yang dijual
+    st.subheader("📦 Produk yang Saya Jual")
+    jualanku = [
+        p for p in st.session_state.products
+        if p["penjual"] == st.session_state.username
+    ]
+
+    if jualanku:
+        for p in jualanku:
+            st.write(f"- {p['nama']} ({p['harga']})")
+    else:
+        st.write("Belum ada produk")
+
+    # Produk disukai
     st.subheader("❤️ Produk Disukai")
     if st.session_state.liked:
         for p in st.session_state.liked:
@@ -129,6 +146,7 @@ def halaman_profil():
     else:
         st.write("Belum ada")
 
+    # Produk disimpan
     st.subheader("🔖 Produk Disimpan")
     if st.session_state.saved:
         for p in st.session_state.saved:
@@ -141,6 +159,7 @@ def halaman_profil():
         st.session_state.products = []
         st.session_state.liked = []
         st.session_state.saved = []
+        st.success("Logout berhasil")
         st.rerun()
 
 # =====================
@@ -166,3 +185,4 @@ if st.session_state.is_login:
     navigasi()
 else:
     halaman_login()
+
