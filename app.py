@@ -87,28 +87,29 @@ def upload_produk():
 
         submit = st.form_submit_button("Posting Produk")
 
-if submit:
-    if not (nama and deskripsi and no_telp):
-        st.error("Semua kolom bertanda * wajib diisi")
+        # ⬇️ SEMUA LOGIKA HARUS DI SINI
+        if submit:
+            if not (nama and deskripsi and no_telp):
+                st.error("Semua kolom bertanda * wajib diisi")
 
-    elif not files or len(files) > 5:
-        st.error("Upload 1–5 foto/video")
+            elif not files or len(files) > 5:
+                st.error("Upload 1–5 foto/video")
 
-    else:
-        produk_baru = {
-            "nama": nama,
-            "harga": harga,
-            "deskripsi": deskripsi,
-            "no_telp": no_telp,
-            "link": link,
-            "penjual": st.session_state.username
-        }
+            else:
+                produk_baru = {
+                    "nama": nama,
+                    "harga": harga,
+                    "deskripsi": deskripsi,
+                    "no_telp": no_telp,
+                    "link": link,
+                    "penjual": st.session_state.username
+                }
 
-        st.session_state.products.append(produk_baru)
-        save_products(st.session_state.products)
+                st.session_state.products.append(produk_baru)
+                save_products(st.session_state.products)
 
-        st.success("✅ Produk berhasil di-upload")
-        st.rerun()
+                st.success("✅ Produk berhasil di-upload")
+                st.rerun()
 
 # =====================
 # SLIDE MEDIA
