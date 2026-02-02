@@ -1,3 +1,6 @@
+import json
+import os
+
 import streamlit as st
 
 # =====================
@@ -16,13 +19,25 @@ if "is_login" not in st.session_state:
     st.session_state.is_login = False
 
 if "products" not in st.session_state:
-    st.session_state.products = []
+    st.session_state.products = load_products()
 
 if "liked" not in st.session_state:
     st.session_state.liked = []
 
 if "saved" not in st.session_state:
     st.session_state.saved = []
+
+DATA_FILE = "data.json"
+
+def load_products():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def save_products(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
 
 # =====================
 # FUNGSI FORMAT RUPIAH
@@ -79,17 +94,20 @@ def upload_produk():
             elif not files or len(files) > 5:
                 st.error("Upload 1–5 foto/video")
             else:
-                st.session_state.products.append({
-                    "nama": nama,
-                    "harga": harga,
-                    "deskripsi": deskripsi,
-                    "no_telp": no_telp,
-                    "link": link,
-                    "files": files,
-                    "penjual": st.session_state.username
-                })
-                st.success("✅ Produk berhasil di-upload")
-                st.rerun()
+               produk_baru = {
+    "nama": nama,
+    "harga": harga,
+    "deskripsi": deskripsi,
+    "no_telp": no_telp,
+    "link": link,
+    "penjual": st.session_state.username
+}
+
+st.session_state.products.append(produk_baru)
+save_products(st.session_state.products)
+
+st.success("✅ Produk berhasil di-upload")
+st.rerun()
 
 # =====================
 # SLIDE MEDIA
