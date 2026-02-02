@@ -142,34 +142,34 @@ def halaman_home():
         return
 
     for i, p in enumerate(produk):
-        with st.container():
-            st.subheader(p["nama"])
-            st.caption(f"Penjual: {p['penjual']}")
-            st.write(p["deskripsi"])
-            st.write(f"💰 Harga: {rupiah(p['harga'])}")
-            st.write(f"📞 Kontak: {p['no_telp']}")
+        st.subheader(p["nama"])
+        st.caption(f"Penjual: {p['penjual']}")
+        st.write(p["deskripsi"])
+        st.write(f"💰 Harga: Rp {p['harga']:,.0f}".replace(",", "."))
+        st.write(f"📞 Kontak: {p['no_telp']}")
 
-            if p["link"]:
-                st.markdown(f"🔗 [Link Produk]({p['link']})")
+        if p.get("link"):
+            st.markdown(f"🔗 [Link Produk]({p['link']})")
 
-if "media" in st.session_state and i in st.session_state.media:
-    media_slider(st.session_state.media[i])
+        # Media hanya dari session (AMAN)
+        if "media" in st.session_state and i in st.session_state.media:
+            media_slider(st.session_state.media[i])
 
-            col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
-            with col1:
-                if st.button("❤️ Suka", key=f"like_{i}"):
-                    if p not in st.session_state.liked:
-                        st.session_state.liked.append(p)
-                        st.success("Produk ditambahkan ke Disukai")
+        with col1:
+            if st.button("❤️ Suka", key=f"like_{i}"):
+                if p not in st.session_state.liked:
+                    st.session_state.liked.append(p)
+                    st.success("Produk ditambahkan ke Disukai")
 
-            with col2:
-                if st.button("🔖 Simpan", key=f"save_{i}"):
-                    if p not in st.session_state.saved:
-                        st.session_state.saved.append(p)
-                        st.success("Produk berhasil disimpan")
+        with col2:
+            if st.button("🔖 Simpan", key=f"save_{i}"):
+                if p not in st.session_state.saved:
+                    st.session_state.saved.append(p)
+                    st.success("Produk berhasil disimpan")
 
-            st.divider()
+        st.divider()
 
 # =====================
 # PROFIL
