@@ -1,7 +1,6 @@
+import streamlit as st
 import json
 import os
-
-import streamlit as st
 
 # =====================
 # KONFIGURASI
@@ -15,18 +14,6 @@ st.set_page_config(
 # =====================
 # SESSION STATE
 # =====================
-if "is_login" not in st.session_state:
-    st.session_state.is_login = False
-
-if "products" not in st.session_state:
-    st.session_state.products = load_products()
-
-if "liked" not in st.session_state:
-    st.session_state.liked = []
-
-if "saved" not in st.session_state:
-    st.session_state.saved = []
-
 DATA_FILE = "data.json"
 
 def load_products():
@@ -38,6 +25,18 @@ def load_products():
 def save_products(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f)
+
+if "is_login" not in st.session_state:
+    st.session_state.is_login = False
+
+if "products" not in st.session_state:
+    st.session_state.products = load_products()
+
+if "liked" not in st.session_state:
+    st.session_state.liked = []
+
+if "saved" not in st.session_state:
+    st.session_state.saved = []
 
 # =====================
 # FUNGSI FORMAT RUPIAH
