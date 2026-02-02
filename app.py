@@ -88,11 +88,13 @@ def upload_produk():
 
         submit = st.form_submit_button("Posting Produk")
 
-        if submit:
+if submit:
     if not (nama and deskripsi and no_telp):
         st.error("Semua kolom bertanda * wajib diisi")
+
     elif not files or len(files) > 5:
         st.error("Upload 1–5 foto/video")
+
     else:
         produk_baru = {
             "nama": nama,
