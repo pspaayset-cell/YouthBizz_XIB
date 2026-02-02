@@ -96,20 +96,14 @@ def upload_produk():
                 st.error("Upload 1–5 foto/video")
 
             else:
-                produk_baru = {
-                    "nama": nama,
-                    "harga": harga,
-                    "deskripsi": deskripsi,
-                    "no_telp": no_telp,
-                    "link": link,
-                    "penjual": st.session_state.username
-                }
-
-                st.session_state.products.append(produk_baru)
-                save_products(st.session_state.products)
-
-                st.success("✅ Produk berhasil di-upload")
-                st.rerun()
+produk_baru = {
+    "nama": nama,
+    "harga": harga,
+    "deskripsi": deskripsi,
+    "no_telp": no_telp,
+    "link": link,
+    "penjual": st.session_state.username
+}
 
 # =====================
 # SLIDE MEDIA
@@ -153,7 +147,8 @@ def halaman_home():
             if p["link"]:
                 st.markdown(f"🔗 [Link Produk]({p['link']})")
 
-            media_slider(p["files"])
+if "media" in st.session_state and i in st.session_state.media:
+    media_slider(st.session_state.media[i])
 
             col1, col2 = st.columns(2)
 
