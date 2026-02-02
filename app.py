@@ -25,6 +25,12 @@ if "saved" not in st.session_state:
     st.session_state.saved = []
 
 # =====================
+# FUNGSI FORMAT RUPIAH
+# =====================
+def rupiah(angka):
+    return f"Rp {angka:,.0f}".replace(",", ".")
+
+# =====================
 # LOGIN
 # =====================
 def halaman_login():
@@ -54,10 +60,10 @@ def upload_produk():
 
     with st.form("upload_form"):
         nama = st.text_input("Nama Produk *")
-        harga = st.text_input("Harga Produk *")
+        harga = st.number_input("Harga Produk (Rp) *", min_value=0, step=1000)
         deskripsi = st.text_area("Deskripsi Produk *")
         no_telp = st.text_input("Nomor Telepon Penjual *")
-        link = st.text_input("Link Eksternal (opsional)")
+        link = st.text_input("Link Produk (opsional)")
 
         files = st.file_uploader(
             "Upload Foto / Video Produk (maks. 5)",
@@ -68,10 +74,10 @@ def upload_produk():
         submit = st.form_submit_button("Posting Produk")
 
         if submit:
-            if not (nama and harga and deskripsi and no_telp):
+            if not (nama and deskripsi and no_telp):
                 st.error("Semua kolom bertanda * wajib diisi")
             elif not files or len(files) > 5:
-                st.error("Upload 1–5 foto/video produk")
+                st.error("Upload 1–5 foto/video")
             else:
                 st.session_state.products.append({
                     "nama": nama,
@@ -86,7 +92,7 @@ def upload_produk():
                 st.rerun()
 
 # =====================
-# SLIDE MEDIA PRODUK
+# SLIDE MEDIA
 # =====================
 def media_slider(files):
     tabs = st.tabs([f"Media {i+1}" for i in range(len(files))])
@@ -94,25 +100,34 @@ def media_slider(files):
         with tab:
             if file.type.startswith("image"):
                 st.image(file, use_container_width=True)
-            elif file.type.startswith("video"):
+            else:
                 st.video(file)
 
 # =====================
-# HOME / FEED
+# BERANDA + SEARCH
 # =====================
 def halaman_home():
     st.title("Beranda 🏠")
 
-    if not st.session_state.products:
-        st.info("Belum ada produk yang diposting")
+    keyword = st.text_input("🔍 Cari produk")
+
+    produk = st.session_state.products
+    if keyword:
+        produk = [
+            p for p in produk
+            if keyword.lower() in p["nama"].lower()
+        ]
+
+    if not produk:
+        st.info("Produk tidak ditemukan")
         return
 
-    for i, p in enumerate(st.session_state.products):
+    for i, p in enumerate(produk):
         with st.container():
             st.subheader(p["nama"])
             st.caption(f"Penjual: {p['penjual']}")
             st.write(p["deskripsi"])
-            st.write(f"💰 Harga: {p['harga']}")
+            st.write(f"💰 Harga: {rupiah(p['harga'])}")
             st.write(f"📞 Kontak: {p['no_telp']}")
 
             if p["link"]:
@@ -141,53 +156,35 @@ def halaman_home():
 # =====================
 def halaman_profil():
     st.title("Profil 👤")
-    st.write(f"Username: **{st.session_state.username}**")
+    st.write(f"👤 **{st.session_state.username}**")
 
     st.subheader("📦 Produk yang Saya Jual")
-    jualanku = [
-        p for p in st.session_state.products
-        if p["penjual"] == st.session_state.username
-    ]
-
-    if jualanku:
-        for p in jualanku:
-            st.write(f"- {p['nama']} ({p['harga']})")
-    else:
-        st.write("Belum ada produk")
+    jualanku = [p for p in st.session_state.products if p["penjual"] == st.session_state.username]
+    for p in jualanku:
+        st.write(f"- {p['nama']} ({rupiah(p['harga'])})")
 
     st.subheader("❤️ Produk Disukai")
-    if st.session_state.liked:
-        for p in st.session_state.liked:
-            st.write(f"- {p['nama']}")
-    else:
-        st.write("Belum ada")
+    for p in st.session_state.liked:
+        st.write(f"- {p['nama']}")
 
     st.subheader("🔖 Produk Disimpan")
-    if st.session_state.saved:
-        for p in st.session_state.saved:
-            st.write(f"- {p['nama']}")
-    else:
-        st.write("Belum ada")
+    for p in st.session_state.saved:
+        st.write(f"- {p['nama']}")
 
     if st.button("Logout"):
         st.session_state.clear()
-        st.success("Logout berhasil")
         st.rerun()
 
 # =====================
 # NAVIGASI
 # =====================
 def navigasi():
-    menu = st.sidebar.radio(
-        "Menu",
-        ["Beranda", "Upload Produk", "Profil"]
-    )
-
+    menu = st.sidebar.radio("Menu", ["Beranda", "Upload Produk", "Profil"])
     if menu == "Beranda":
         halaman_home()
     elif menu == "Upload Produk":
         upload_produk()
-    elif menu == "Profil":
+    else:
         halaman_profil()
 
 # =====================
