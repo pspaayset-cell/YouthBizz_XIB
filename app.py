@@ -39,7 +39,7 @@ if "saved" not in st.session_state:
     st.session_state.saved = []
 
 # =====================
-# FUNGSI FORMAT RUPIAH
+# FORMAT RUPIAH
 # =====================
 def rupiah(angka):
     return f"Rp {angka:,.0f}".replace(",", ".")
@@ -67,7 +67,7 @@ def halaman_login():
                 st.error("Semua data wajib diisi")
 
 # =====================
-# UPLOAD PRODUK
+# UPLOAD PRODUK (TANPA FOTO/VIDEO)
 # =====================
 def upload_produk():
     st.title("Upload Produk 📤")
@@ -79,21 +79,11 @@ def upload_produk():
         no_telp = st.text_input("Nomor Telepon Penjual *")
         link = st.text_input("Link Produk (opsional)")
 
-        files = st.file_uploader(
-            "Upload Foto / Video Produk (maks. 5)",
-            type=["jpg", "png", "mp4"],
-            accept_multiple_files=True
-        )
-
         submit = st.form_submit_button("Posting Produk")
 
         if submit:
             if not (nama and deskripsi and no_telp):
                 st.error("Semua kolom bertanda * wajib diisi")
-
-            elif not files or len(files) > 5:
-                st.error("Upload 1–5 foto/video")
-
             else:
                 produk_baru = {
                     "nama": nama,
@@ -109,18 +99,6 @@ def upload_produk():
 
                 st.success("✅ Produk berhasil di-upload")
                 st.rerun()
-
-# =====================
-# SLIDE MEDIA
-# =====================
-def media_slider(files):
-    tabs = st.tabs([f"Media {i+1}" for i in range(len(files))])
-    for tab, file in zip(tabs, files):
-        with tab:
-            if file.type.startswith("image"):
-                st.image(file, use_container_width=True)
-            else:
-                st.video(file)
 
 # =====================
 # BERANDA + SEARCH
@@ -145,15 +123,11 @@ def halaman_home():
         st.subheader(p["nama"])
         st.caption(f"Penjual: {p['penjual']}")
         st.write(p["deskripsi"])
-        st.write(f"💰 Harga: Rp {p['harga']:,.0f}".replace(",", "."))
+        st.write(f"💰 Harga: {rupiah(p['harga'])}")
         st.write(f"📞 Kontak: {p['no_telp']}")
 
         if p.get("link"):
             st.markdown(f"🔗 [Link Produk]({p['link']})")
-
-        # Media hanya dari session (AMAN)
-        if "media" in st.session_state and i in st.session_state.media:
-            media_slider(st.session_state.media[i])
 
         col1, col2 = st.columns(2)
 
@@ -179,7 +153,10 @@ def halaman_profil():
     st.write(f"👤 **{st.session_state.username}**")
 
     st.subheader("📦 Produk yang Saya Jual")
-    jualanku = [p for p in st.session_state.products if p["penjual"] == st.session_state.username]
+    jualanku = [
+        p for p in st.session_state.products
+        if p["penjual"] == st.session_state.username
+    ]
     for p in jualanku:
         st.write(f"- {p['nama']} ({rupiah(p['harga'])})")
 
